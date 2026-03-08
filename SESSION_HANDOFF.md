@@ -1,5 +1,5 @@
 # VoiceWall - Session Handoff Document
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-09*
 
 ## Project Overview
 VoiceWall is a testimonial collection/management Micro-SaaS tool. The user (金杉昌俊) is a programming beginner who wants maximum automation from Claude.
@@ -19,7 +19,7 @@ VoiceWall is a testimonial collection/management Micro-SaaS tool. The user (金�
 - **URL:** https://viirgzvyqmiiommyrhsm.supabase.co
 - **Region:** Asia-Pacific (ap-southeast-1)
 - **Database table:** `waitlist` (id BIGINT PK, email TEXT UNIQUE, created_at TIMESTAMPTZ)
-- **RLS:** Enabled with "Allow anonymous insert" policy for `anon` role
+- **RLS:** Enabled with "Allow public insert" policy for `{public}` role (INSERT only, WITH CHECK true)
 - **Anon key:** Stored in `.env.local` (not committed to git)
 
 ## Project Structure
@@ -61,20 +61,13 @@ Last committed: `734eeb6 Update: 2026-03-08 21:33`
 6. Created `waitlist` table in Supabase with RLS + anon insert policy
 7. Wrote Supabase integration code (client, API route, updated page.tsx)
 8. Retrieved anon key and set it in `.env.local`
+9. Set Vercel environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
+10. Deployed to Vercel with env vars (successful)
+11. **Fixed RLS bug:** Removed `.select()` from `route.ts` insert call — Supabase client executes SELECT after INSERT when `.select()` is used, but there was no SELECT RLS policy, causing "new row violates row-level security policy" error
 
 ## What Needs To Be Done Next (in order)
-1. **User runs on PC:** `cd C:\Users\duper\voicewall && npm install`
-2. **User runs on PC:** `powershell -ExecutionPolicy Bypass -File deploy.ps1`
-3. **Set Vercel environment variables (required for production):**
-   ```
-   vercel env add NEXT_PUBLIC_SUPABASE_URL production
-   → https://viirgzvyqmiiommyrhsm.supabase.co
-
-   vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
-   → (the anon key from .env.local)
-   ```
-4. **Redeploy:** `vercel --prod --yes`
-5. **Test:** Submit an email on https://voicewall.vercel.app and verify it appears in Supabase dashboard
+1. **User runs on PC:** `cd C:\Users\duper\voicewall && powershell -ExecutionPolicy Bypass -File deploy.ps1`
+2. **Test:** Submit an email on https://voicewall.vercel.app and verify it appears in Supabase dashboard
 
 ## Future Roadmap
 - Connect GitHub to Vercel for auto-deploy (currently using CLI deploy)

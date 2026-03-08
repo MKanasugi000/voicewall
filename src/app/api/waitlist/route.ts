@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("waitlist")
-      .insert([{ email: email.toLowerCase().trim() }])
-      .select();
+      .insert([{ email: email.toLowerCase().trim() }]);
 
     if (error) {
       if (error.code === "23505") {
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { message: "Successfully registered", data },
+      { message: "Successfully registered" },
       { status: 201 }
     );
   } catch {
