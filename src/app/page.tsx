@@ -17,7 +17,21 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const t = i18n[lang];
-  const handleWaitlist = (e: React.FormEvent) => { e.preventDefault(); if (email) setSubmitted(true); };
+  const [loading, setLoading] = useState(false);
+  const handleWaitlist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (res.ok) setSubmitted(true);
+    } catch { /* ignore */ }
+    setLoading(false);
+  };
   const features = [{icon:"📝",t:t.f1t,d:t.f1d},{icon:"📊",t:t.f2t,d:t.f2d},{icon:"🎨",t:t.f3t,d:t.f3d},{icon:"🌐",t:t.f4t,d:t.f4d}];
   const steps = [{n:"1",t:t.s1t,d:t.s1d},{n:"2",t:t.s2t,d:t.s2d},{n:"3",t:t.s3t,d:t.s3d}];
   const plans = [
@@ -71,7 +85,7 @@ export default function Home() {
       <section id="waitlist" style={{padding:"60px 20px",maxWidth:500,margin:"0 auto",textAlign:"center"}}>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8,color:"#1e293b"}}>{t.wt}</h2>
         <p style={{color:"#64748b",marginBottom:24}}>{t.ws}</p>
-        {!submitted?<form onSubmit={handleWaitlist} style={{display:"flex",gap:8}}><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={t.eph} required style={{flex:1,padding:"12px 16px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:15,outline:"none"}}/><button type="submit" style={{padding:"12px 24px",borderRadius:8,background:"#2563eb",color:"#fff",border:"none",fontSize:15,fontWeight:600,cursor:"pointer"}}>{t.wb}</button></form>:<div style={{background:"#d1fae5",color:"#065f46",padding:"16px 24px",borderRadius:8,fontWeight:500}}>{t.wth}</div>}
+        {!submitted?<form onSubmit={handleWaitlist} style={{display:"flex",gap:8}}><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={t.eph} required style={{flex:1,padding:"12px 16px",borderRadius:8,border:"1px solid #e2e8f0",fontSize:15,outline:"none"}}/><button type="submit" disabled={loading} style={{padding:"12px 24px",borderRadius:8,background:loading?"#93c5fd":"#2563eb",color:"#fff",border:"none",fontSize:15,fontWeight:600,cursor:loading?"not-allowed":"pointer"}}>{loading?"...":t.wb}</button></form>:<div style={{background:"#d1fae5",color:"#065f46",padding:"16px 24px",borderRadius:8,fontWeight:500}}>{t.wth}</div>}
       </section>
       <section style={{background:"#1e293b",padding:"60px 20px",textAlign:"center"}}>
         <h2 style={{fontSize:28,fontWeight:800,color:"#fff",marginBottom:12}}>{t.ctaT}</h2>
