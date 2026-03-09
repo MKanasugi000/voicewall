@@ -204,11 +204,25 @@ export default function Dashboard() {
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://voicewall.vercel.app";
   const formUrl = selectedProject ? `${baseUrl}/t/${selectedProject.slug}` : "";
+
+  // ウィジェットカスタマイズ用パラメータ
+  const embedParams = plan === "pro" ? "?brand=0" : "";
   const embedCode = selectedProject
-    ? `<iframe src="${baseUrl}/embed/${selectedProject.slug}" width="100%" height="600" frameborder="0" style="border:none;border-radius:12px;"></iframe>`
+    ? `<iframe src="${baseUrl}/embed/${selectedProject.slug}${embedParams}" width="100%" height="600" frameborder="0" style="border:none;border-radius:12px;"></iframe>`
     : "";
 
   const FREE_LIMIT = { projects: 1, testimonials: 5 };
+
+  // CSVエクスポート
+  const handleExportCSV = async () => {
+    if (!selectedProject || !user) return;
+    if (plan !== "pro") {
+      alert("CSVエクスポートはProプラン限定の機能です。");
+      return;
+    }
+    const url = `/api/testimonials/export?slug=${selectedProject.slug}&userId=${user.id}`;
+    window.open(url, "_blank");
+  };
 
   if (authLoading) {
     return (
@@ -479,12 +493,8 @@ export default function Dashboard() {
                     {copied === "form" ? "✓ コピー済み" : "コピー"}
                   </button>
                 </div>
-                <a
-                  href={formUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: "inline-block", marginTop: 8, fontSize: 12, color: "#2563eb", textDecoration: "none" }}
-                >
+                <a href={formUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-block", marginTop: 8, fontSize: 12, color: "#2563eb", textDecoration: "none" }}>
                   プレビュー →
                 </a>
               </div>
@@ -503,7 +513,31 @@ export default function Dashboard() {
                     {copied === "embed" ? "✓ コピー済み" : "コピー"}
                   </button>
                 </div>
+                {plan === "pro" && (
+                  <p style={{ fontSize: 11, color: "#16a34a", marginTop: 6 }}>
+                    Pro: VoiceWallロゴ非表示 / ?theme=dark でダークモード / ?cols=2 でカラム数指定
+                  </p>
+                )}
               </div>
+            </div>
+
+            {/* Actions bar */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              <button
+                onClick={handleExportCSV}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  background: plan === "pro" ? "#fff" : "#f1f5f9",
+                  color: plan === "pro" ? "#1e293b" : "#94a3b8",
+                  border: "1px solid #e2e8f0",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: plan === "pro" ? "pointer" : "not-allowed",
+                }}
+              >
+                CSVエクスポート {plan !== "pro" && "(Pro)"}
+              </button>
             </div>
 
             {/* Tabs */}

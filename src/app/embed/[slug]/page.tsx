@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 interface Testimonial {
   id: string;
@@ -13,22 +13,40 @@ interface Testimonial {
 
 export default function EmbedWidget() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+
+  // カスタマイズオプション（URLパラメータで制御）
+  const theme = searchParams.get("theme") || "light";
+  const cols = parseInt(searchParams.get("cols") || "0") || 0;
+  const hideBranding = searchParams.get("brand") === "0";
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
-  const [projectName, setProjectName] = useState("");
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     fetch(`/api/testimonials?slug=${slug}`)
       .then((res) => res.json())
       .then((data) => {
         setTestimonials(data.testimonials || []);
-        setProjectName(data.project?.name || "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    // Proプランかチェック
+    fetch(`/api/embed-check?slug=${slug}`)
+      .then((r) => r.json())
+      .then((d) => setIsPro(d.isPro || false))
+      .catch(() => {});
   }, [slug]);
+
+  const isDark = theme === "dark";
+  const cardBg = isDark ? "#334155" : "#fff";
+  const cardBorder = isDark ? "#475569" : "#e2e8f0";
+  const textColor = isDark ? "#f1f5f9" : "#1e293b";
+  const subColor = isDark ? "#94a3b8" : "#94a3b8";
+  const gridCols = cols > 0 ? `repeat(${cols}, 1fr)` : "repeat(auto-fill, minmax(280px, 1fr))";
 
   if (loading) {
     return (
@@ -46,83 +64,54 @@ export default function EmbedWidget() {
     );
   }
 
+  const showBranding = !(hideBranding && isPro);
+
   return (
-    <div style={{ fontFamily: "Inter, Noto Sans JP, sans-serif", padding: 16, background: "transparent" }}>
-      {/* Wall of Love grid */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-        gap: 16,
-      }}>
+    <div style={{ fontFamily: "Inter, Noto Sans JP, sans-serif", padding: 16, background: isDark ? "#1e293b" : "transparent" }}>
+      <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: 16 }}>
         {testimonials.map((t) => (
           <div
             key={t.id}
             style={{
-              background: "#fff",
+              background: cardBg,
               borderRadius: 12,
               padding: 24,
-              border: "1px solid #e2e8f0",
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
           >
-            {/* Stars */}
             <div style={{ color: "#f59e0b", letterSpacing: 2, marginBottom: 12, fontSize: 16 }}>
               {"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}
             </div>
-
-            {/* Content */}
-            <p style={{
-              fontSize: 14,
-              color: "#1e293b",
-              lineHeight: 1.7,
-              marginBottom: 16,
-              fontStyle: "italic",
-            }}>
+            <p style={{ fontSize: 14, color: textColor, lineHeight: 1.7, marginBottom: 16, fontStyle: "italic" }}>
               &ldquo;{t.content}&rdquo;
             </p>
-
-            {/* Author */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                background: "#dbeafe",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#2563eb",
+                width: 36, height: 36, borderRadius: "50%",
+                background: isDark ? "#475569" : "#dbeafe",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 13, fontWeight: 700, color: "#2563eb",
               }}>
                 {t.customer_name.charAt(0)}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b" }}>
-                  {t.customer_name}
-                </div>
-                {t.customer_title && (
-                  <div style={{ fontSize: 12, color: "#94a3b8" }}>
-                    {t.customer_title}
-                  </div>
-                )}
+                <div style={{ fontSize: 14, fontWeight: 600, color: textColor }}>{t.customer_name}</div>
+                {t.customer_title && <div style={{ fontSize: 12, color: subColor }}>{t.customer_title}</div>}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Powered by */}
-      <div style={{ textAlign: "center", marginTop: 20 }}>
-        <a
-          href="https://voicewall.vercel.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: 11, color: "#94a3b8", textDecoration: "none" }}
-        >
-          Powered by <span style={{ fontWeight: 600 }}>VoiceWall</span>
-        </a>
-      </div>
+      {showBranding && (
+        <div style={{ textAlign: "center", marginTop: 20 }}>
+          <a href="https://voicewall.vercel.app" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: subColor, textDecoration: "none" }}>
+            Powered by <span style={{ fontWeight: 600 }}>VoiceWall</span>
+          </a>
+        </div>
+      )}
     </div>
   );
 }
