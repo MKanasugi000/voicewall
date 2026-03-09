@@ -79,13 +79,31 @@ export default function Home() {
       featured: false,
     },
     {
+      name: "Starter",
+      price: "¥1,480",
+      per: "/ 月",
+      items: ["プロジェクト3つ", "口コミ収集 50件/月", "ロゴ非表示", "ウィジェットカスタマイズ", "メールサポート"],
+      btn: "Starterを始める",
+      href: "/pricing",
+      featured: false,
+    },
+    {
       name: "Pro",
       price: "¥2,980",
       per: "/ 月",
-      items: ["プロジェクト無制限", "口コミ収集 無制限", "ロゴ非表示", "ウィジェットカスタマイズ", "CSVエクスポート", "優先サポート"],
+      items: ["プロジェクト無制限", "口コミ収集 無制限", "ロゴ非表示", "CSVエクスポート", "AI口コミ要約", "優先サポート"],
       btn: "Proを始める",
       href: "/pricing",
       featured: true,
+    },
+    {
+      name: "Agency",
+      price: "¥9,800",
+      per: "/ 月",
+      items: ["全機能 + 無制限", "AI事例自動生成", "業種別テンプレート", "クライアント管理", "ホワイトラベル対応", "専任サポート"],
+      btn: "Agencyを始める",
+      href: "/pricing",
+      featured: false,
     },
   ];
 
@@ -132,6 +150,16 @@ export default function Home() {
     }
     .bg-blob {
       animation: pulse-soft 4s ease-in-out infinite;
+    }
+    @media (max-width: 900px) {
+      #pricing .pricing-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+    @media (max-width: 560px) {
+      #pricing .pricing-grid {
+        grid-template-columns: 1fr !important;
+      }
     }
   `;
 
@@ -356,16 +384,16 @@ export default function Home() {
 
       {/* Pricing */}
       <section id="pricing" style={{ background: "linear-gradient(180deg, #f8fafc 0%, #fff 100%)", padding: "80px 20px", borderTop: "1px solid #e2e8f0" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
           <div style={{ display: "inline-block", background: "#d1fae5", padding: "4px 14px", borderRadius: 99, fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 16, letterSpacing: 1 }}>PRICING</div>
           <h2 style={{ fontSize: 36, fontWeight: 800, marginBottom: 8, color: "#1e293b" }}>料金プラン</h2>
           <p style={{ color: "#64748b", marginBottom: 48, fontSize: 17 }}>まずは無料で始めましょう。</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, maxWidth: 700, margin: "0 auto" }}>
+          <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, maxWidth: 1060, margin: "0 auto" }}>
             {plans.map((p, i) => (
               <div key={i} className="card-hover" style={{
                 background: p.featured ? "linear-gradient(135deg, #1e293b, #0f172a)" : "#fff",
                 borderRadius: 20,
-                padding: 36,
+                padding: 28,
                 border: p.featured ? "2px solid #2563eb" : "1px solid #e2e8f0",
                 textAlign: "left",
                 position: "relative",
@@ -377,7 +405,7 @@ export default function Home() {
                   </span>
                 )}
                 <h3 style={{ fontSize: 20, color: p.featured ? "#e2e8f0" : "#1e293b", marginBottom: 4, fontWeight: 700 }}>{p.name}</h3>
-                <div style={{ fontSize: 40, fontWeight: 800, margin: "16px 0", color: p.featured ? "#fff" : "#1e293b" }}>
+                <div style={{ fontSize: 32, fontWeight: 800, margin: "16px 0", color: p.featured ? "#fff" : "#1e293b" }}>
                   {p.price}
                   {p.per && <span style={{ fontSize: 15, color: p.featured ? "#94a3b8" : "#94a3b8", fontWeight: 400 }}> {p.per}</span>}
                 </div>

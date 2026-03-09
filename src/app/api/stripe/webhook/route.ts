@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     case "checkout.session.completed": {
       const session = event.data.object;
       const userId = session.metadata?.userId;
+      const plan = session.metadata?.plan || "pro"; // metadataからプラン取得（後方互換でpro）
       const customerId = session.customer as string;
       const subscriptionId = session.subscription as string;
 
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
           user_id: userId,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
-          plan: "pro",
+          plan: plan,
           status: "active",
           updated_at: new Date().toISOString(),
         });

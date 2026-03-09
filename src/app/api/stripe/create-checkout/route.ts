@@ -1,16 +1,26 @@
 import { NextResponse } from "next/server";
-import { stripe, PRO_PRICE_ID } from "@/lib/stripe";
+import { stripe, STARTER_PRICE_ID, PRO_PRICE_ID, AGENCY_PRICE_ID } from "@/lib/stripe";
+
+const PRICE_MAP: Record<string, string> = {
+  starter: STARTER_PRICE_ID,
+  pro: PRO_PRICE_ID,
+  agency: AGENCY_PRICE_ID,
+};
 
 export async function POST(request: Request) {
   try {
-    const { email, userId } = await request.json();
+    const { email, userId, plan } = await request.json();
 
     if (!email || !userId) {
       return NextResponse.json({ error: "Missing email or userId" }, { status: 400 });
     }
 
-    if (!PRO_PRICE_ID) {
-      return NextResponse.json({ error: "Price not configured" }, { status: 500 });
+    // planが指定されていない場合はProをデフォルトに（後方互換性）
+    const selectedPlan = plan || "pro";
+    const priceId = PRICE_MAP[selectedPlan];
+
+    if (!priceId) {
+      return NextResponse.json({ error: `Price not configured for plan: ${selectedPlan}` }, { status: 500 });
     }
 
     // Stripe Checkout セッションを作成
@@ -20,12 +30,13 @@ export async function POST(request: Request) {
       customer_email: email,
       line_items: [
         {
-          price: PRO_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
       metadata: {
         userId: userId,
+        plan: selectedPlan,
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://voicewall.vercel.app"}/dashboard?upgraded=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://voicewall.vercel.app"}/pricing`,

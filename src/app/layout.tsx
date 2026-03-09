@@ -51,11 +51,27 @@ const jsonLd = {
     },
     {
       "@type": "Offer",
+      name: "Starter",
+      price: "1480",
+      priceCurrency: "JPY",
+      billingIncrement: "P1M",
+      description: "プロジェクト3つ、口コミ収集50件/月",
+    },
+    {
+      "@type": "Offer",
       name: "Pro",
       price: "2980",
       priceCurrency: "JPY",
       billingIncrement: "P1M",
-      description: "プロジェクト無制限、口コミ収集無制限",
+      description: "プロジェクト無制限、口コミ収集無制限、AI口コミ要約",
+    },
+    {
+      "@type": "Offer",
+      name: "Agency",
+      price: "9800",
+      priceCurrency: "JPY",
+      billingIncrement: "P1M",
+      description: "全機能無制限、ホワイトラベル対応、専任サポート",
     },
   ],
   aggregateRating: {
