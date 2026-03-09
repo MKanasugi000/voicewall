@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 interface Testimonial {
   id: string;
@@ -19,6 +21,8 @@ interface Project {
 }
 
 export default function Dashboard() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +30,24 @@ export default function Dashboard() {
   const [slugInput, setSlugInput] = useState("demo");
   const [tab, setTab] = useState<"all" | "pending" | "published">("all");
   const [copied, setCopied] = useState("");
+
+  // 認証チェック：ログインしていなければ /login にリダイレクト
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        setAuthLoading(false);
+      } else {
+        window.location.href = "/login";
+      }
+    });
+  }, []);
+
+  // ログアウト処理
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -83,6 +105,15 @@ export default function Dashboard() {
     setTimeout(() => setCopied(""), 2000);
   };
 
+  // 認証チェック中はローディング表示
+  if (authLoading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
+        <p style={{ color: "#94a3b8", fontSize: 16 }}>読み込み中...</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "Inter, Noto Sans JP, sans-serif" }}>
       {/* Header */}
@@ -119,6 +150,13 @@ export default function Dashboard() {
             style={{ padding: "6px 16px", borderRadius: 6, background: "#2563eb", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
           >
             読み込む
+          </button>
+          <span style={{ fontSize: 12, color: "#94a3b8", marginLeft: 8 }}>{user?.email}</span>
+          <button
+            onClick={handleLogout}
+            style={{ padding: "6px 14px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", fontSize: 12, cursor: "pointer" }}
+          >
+            ログアウト
           </button>
         </div>
       </nav>
