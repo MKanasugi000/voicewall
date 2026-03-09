@@ -17,13 +17,18 @@ export default function LoginPage() {
     setMessage("");
 
     if (isSignUp) {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
       if (signUpError) {
         setError(signUpError.message);
+      } else if (data.session) {
+        // メール確認が無効の場合、すぐにログイン状態になる
+        window.location.href = "/dashboard";
+        return;
       } else {
+        // メール確認が有効の場合（フォールバック）
         setMessage("確認メールを送信しました。メールのリンクをクリックしてください。");
       }
     } else {
