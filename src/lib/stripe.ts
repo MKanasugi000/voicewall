@@ -11,12 +11,12 @@ export const PLANS = {
     name: "Free",
     price: 0,
     projects: 1,
-    testimonials: 5, // 月5件まで
-    features: ["プロジェクト1つ", "口コミ収集 5件/月", "VoiceWallロゴ表示あり"],
+    testimonials: 10, // 月10件まで
+    features: ["プロジェクト1つ", "口コミ収集 10件/月", "VoiceWallロゴ表示あり"],
   },
   pro: {
     name: "Pro",
-    price: 980,
+    price: 2980,
     projects: -1, // 無制限
     testimonials: -1, // 無制限
     features: [

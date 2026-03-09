@@ -10,7 +10,7 @@ const plans = [
     description: "まずは試してみたい方に",
     features: [
       "プロジェクト1つ",
-      "口コミ収集 5件/月",
+      "口コミ収集 10件/月",
       "VoiceWallロゴ表示あり",
       "基本的な埋め込みウィジェット",
     ],
@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "¥980",
+    price: "¥2,980",
     period: "/月",
     description: "本格的に口コミを活用したい方に",
     features: [
