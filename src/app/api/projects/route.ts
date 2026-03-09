@@ -48,22 +48,24 @@ export async function GET(request: NextRequest) {
 // POST: 新しいプロジェクトを作成
 export async function POST(request: NextRequest) {
   try {
-    const { name, userId, plan } = await request.json();
+    const { name, userId, plan, industry } = await request.json();
 
     if (!name || !userId) {
       return NextResponse.json({ error: "name and userId are required" }, { status: 400 });
     }
 
-    // Freeプランの場合、プロジェクト数を制限（1つまで）
-    if (plan !== "pro") {
+    // プランごとのプロジェクト数制限
+    const planLimits: Record<string, number> = { free: 1, starter: 3, pro: -1, agency: -1 };
+    const limit = planLimits[plan || "free"] ?? 1;
+    if (limit > 0) {
       const { count } = await supabase
         .from("projects")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId);
 
-      if ((count || 0) >= 1) {
+      if ((count || 0) >= limit) {
         return NextResponse.json(
-          { error: "Freeプランではプロジェクトは1つまでです。Proプランにアップグレードしてください。" },
+          { error: `現在のプランではプロジェクトは${limit}つまでです。アップグレードしてください。` },
           { status: 403 }
         );
       }

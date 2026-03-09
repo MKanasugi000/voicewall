@@ -53,8 +53,10 @@ export async function POST(request: NextRequest) {
 
       const userPlan = sub?.plan || "free";
 
-      if (userPlan === "free") {
-        // 今月の口コミ数をカウント
+      // プランごとの月間口コミ数制限
+      const planTestimonialLimits: Record<string, number> = { free: 10, starter: 50, pro: -1, agency: -1 };
+      const monthlyLimit = planTestimonialLimits[userPlan] ?? 10;
+      if (monthlyLimit > 0) {
         const now = new Date();
         const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
@@ -64,9 +66,9 @@ export async function POST(request: NextRequest) {
           .eq("project_id", project.id)
           .gte("created_at", firstOfMonth);
 
-        if ((monthlyCount || 0) >= 5) {
+        if ((monthlyCount || 0) >= monthlyLimit) {
           return NextResponse.json(
-            { error: "このプロジェクトの今月の口コミ上限（5件）に達しました。" },
+            { error: `このプロジェクトの今月の口コミ上限（${monthlyLimit}件）に達しました。` },
             { status: 403 }
           );
         }

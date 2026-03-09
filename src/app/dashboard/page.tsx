@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { INDUSTRY_TEMPLATES } from "@/lib/templates";
 import type { User } from "@supabase/supabase-js";
 
 interface Testimonial {
@@ -70,6 +71,7 @@ export default function Dashboard() {
   const [newProjectName, setNewProjectName] = useState("");
   const [creating, setCreating] = useState(false);
   const [projectError, setProjectError] = useState("");
+  const [selectedIndustry, setSelectedIndustry] = useState("general");
 
   // Testimonials state
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -77,6 +79,12 @@ export default function Dashboard() {
   const [testimonialsLoading, setTestimonialsLoading] = useState(false);
   const [tab, setTab] = useState<"all" | "pending" | "published">("all");
   const [copied, setCopied] = useState("");
+
+  // AI Summary state
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [aiSummary, setAiSummary] = useState<any>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   // Auth check
   useEffect(() => {
@@ -173,7 +181,7 @@ export default function Dashboard() {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newProjectName.trim(), userId: user.id, plan }),
+        body: JSON.stringify({ name: newProjectName.trim(), userId: user.id, plan, industry: selectedIndustry }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -255,6 +263,25 @@ export default function Dashboard() {
     }
   };
 
+  // Fetch AI Summary
+  const fetchSummary = async () => {
+    if (!selectedProject || !user) return;
+    setSummaryLoading(true);
+    try {
+      const res = await fetch(`/api/testimonials/summary?slug=${selectedProject.slug}&userId=${user.id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setAiSummary(data.summary);
+        setShowSummary(true);
+      } else {
+        alert(data.error || "要約の取得に失敗しました");
+      }
+    } catch {
+      alert("要約の取得に失敗しました");
+    }
+    setSummaryLoading(false);
+  };
+
   // Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -294,12 +321,22 @@ export default function Dashboard() {
   const formUrl = selectedProject ? `${baseUrl}/t/${selectedProject.slug}` : "";
 
   // ウィジェットカスタマイズ用パラメータ
-  const embedParams = plan === "pro" ? "?brand=0" : "";
+  const embedParams = (plan === "pro" || plan === "agency") ? "?brand=0" : "";
   const embedCode = selectedProject
     ? `<iframe src="${baseUrl}/embed/${selectedProject.slug}${embedParams}" width="100%" height="600" frameborder="0" style="border:none;border-radius:12px;"></iframe>`
     : "";
 
-  const FREE_LIMIT = { projects: 1, testimonials: 5 };
+  // 業種テンプレート付きフォームURL
+  const industryParam = selectedIndustry !== "general" ? `?t=${selectedIndustry}` : "";
+  const formUrlWithTemplate = selectedProject ? `${baseUrl}/t/${selectedProject.slug}${industryParam}` : "";
+
+  const PLAN_LIMITS: Record<string, { projects: number; testimonials: number }> = {
+    free: { projects: 1, testimonials: 10 },
+    starter: { projects: 3, testimonials: 50 },
+    pro: { projects: -1, testimonials: -1 },
+    agency: { projects: -1, testimonials: -1 },
+  };
+  const FREE_LIMIT = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
 
   // Stripeカスタマーポータル
   const handleManageSubscription = async () => {
@@ -324,8 +361,8 @@ export default function Dashboard() {
   // CSVエクスポート
   const handleExportCSV = async () => {
     if (!selectedProject || !user) return;
-    if (plan !== "pro") {
-      alert("CSVエクスポートはProプラン限定の機能です。");
+    if (plan !== "pro" && plan !== "agency") {
+      alert("CSVエクスポートはPro/Agencyプラン限定の機能です。");
       return;
     }
     const url = `/api/testimonials/export?slug=${selectedProject.slug}&userId=${user.id}`;
@@ -363,16 +400,16 @@ export default function Dashboard() {
           <span style={{
             fontSize: 12,
             fontWeight: 700,
-            color: plan === "pro" ? "#2563eb" : "#64748b",
-            background: plan === "pro" ? "#dbeafe" : "#f1f5f9",
+            color: (plan === "pro" || plan === "agency") ? "#2563eb" : plan === "starter" ? "#7c3aed" : "#64748b",
+            background: (plan === "pro" || plan === "agency") ? "#dbeafe" : plan === "starter" ? "#ede9fe" : "#f1f5f9",
             padding: "3px 10px",
             borderRadius: 6,
           }}>
-            {plan === "pro" ? "Pro" : "Free"}
+            {plan === "agency" ? "Agency" : plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "Free"}
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {plan === "free" ? (
+          {plan === "free" || plan === "starter" ? (
             <a
               href="/pricing"
               style={{
@@ -385,7 +422,7 @@ export default function Dashboard() {
                 textDecoration: "none",
               }}
             >
-              Proにアップグレード
+              {plan === "free" ? "アップグレード" : "Proにアップグレード"}
             </a>
           ) : (
             <button
@@ -586,9 +623,9 @@ export default function Dashboard() {
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
               <h1 style={{ fontSize: 24, fontWeight: 700, color: "#1e293b" }}>プロジェクト</h1>
-              {plan === "free" && (
+              {(plan === "free" || plan === "starter") && (
                 <span style={{ fontSize: 12, color: "#94a3b8" }}>
-                  {projects.length} / {FREE_LIMIT.projects} プロジェクト（Free）
+                  {projects.length} / {FREE_LIMIT.projects} プロジェクト（{plan === "free" ? "Free" : "Starter"}）
                 </span>
               )}
             </div>
@@ -598,6 +635,33 @@ export default function Dashboard() {
               <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", marginBottom: 12 }}>
                 新しいプロジェクトを作成
               </div>
+
+              {/* 業種テンプレート選択 */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>業種テンプレート</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {INDUSTRY_TEMPLATES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelectedIndustry(t.id)}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        border: selectedIndustry === t.id ? `2px solid ${t.color}` : "1px solid #e2e8f0",
+                        background: selectedIndustry === t.id ? `${t.color}10` : "#fff",
+                        color: selectedIndustry === t.id ? t.color : "#64748b",
+                        fontSize: 13,
+                        fontWeight: selectedIndustry === t.id ? 600 : 400,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {t.icon} {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div style={{ display: "flex", gap: 8 }}>
                 <input
                   value={newProjectName}
@@ -715,7 +779,7 @@ export default function Dashboard() {
             </div>
 
             {/* Plan limit warning */}
-            {plan === "free" && stats.total >= FREE_LIMIT.testimonials && (
+            {(plan === "free" || plan === "starter") && FREE_LIMIT.testimonials > 0 && stats.total >= FREE_LIMIT.testimonials && (
               <div style={{
                 background: "#fffbeb",
                 border: "1px solid #fde68a",
@@ -728,10 +792,10 @@ export default function Dashboard() {
               }}>
                 <div>
                   <div style={{ fontWeight: 600, color: "#92400e", fontSize: 14 }}>
-                    Freeプランの上限（{FREE_LIMIT.testimonials}件）に達しました
+                    {plan === "free" ? "Free" : "Starter"}プランの上限（{FREE_LIMIT.testimonials}件/月）に達しました
                   </div>
                   <div style={{ color: "#a16207", fontSize: 13, marginTop: 4 }}>
-                    Proプランにアップグレードすると無制限に口コミを収集できます。
+                    アップグレードするとより多くの口コミを収集できます。
                   </div>
                 </div>
                 <a
@@ -756,20 +820,43 @@ export default function Dashboard() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
               <div style={{ background: "#fff", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", marginBottom: 8 }}>収集フォームURL</div>
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>業種テンプレート（フォームのガイド質問が変わります）</div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {INDUSTRY_TEMPLATES.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setSelectedIndustry(t.id)}
+                        style={{
+                          padding: "3px 8px",
+                          borderRadius: 6,
+                          border: selectedIndustry === t.id ? `2px solid ${t.color}` : "1px solid #e2e8f0",
+                          background: selectedIndustry === t.id ? `${t.color}10` : "#fff",
+                          color: selectedIndustry === t.id ? t.color : "#94a3b8",
+                          fontSize: 11,
+                          fontWeight: selectedIndustry === t.id ? 600 : 400,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {t.icon} {t.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <input
                     readOnly
-                    value={formUrl}
+                    value={formUrlWithTemplate}
                     style={{ flex: 1, padding: "8px 12px", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 13, color: "#64748b", background: "#f8fafc" }}
                   />
                   <button
-                    onClick={() => copyToClipboard(formUrl, "form")}
+                    onClick={() => copyToClipboard(formUrlWithTemplate, "form")}
                     style={{ padding: "8px 16px", borderRadius: 6, background: copied === "form" ? "#16a34a" : "#2563eb", color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
                   >
                     {copied === "form" ? "✓ コピー済み" : "コピー"}
                   </button>
                 </div>
-                <a href={formUrl} target="_blank" rel="noopener noreferrer"
+                <a href={formUrlWithTemplate} target="_blank" rel="noopener noreferrer"
                   style={{ display: "inline-block", marginTop: 8, fontSize: 12, color: "#2563eb", textDecoration: "none" }}>
                   プレビュー →
                 </a>
@@ -789,9 +876,9 @@ export default function Dashboard() {
                     {copied === "embed" ? "✓ コピー済み" : "コピー"}
                   </button>
                 </div>
-                {plan === "pro" && (
+                {(plan === "pro" || plan === "agency") && (
                   <p style={{ fontSize: 11, color: "#16a34a", marginTop: 6 }}>
-                    Pro: VoiceWallロゴ非表示 / ?theme=dark でダークモード / ?cols=2 でカラム数指定
+                    VoiceWallロゴ非表示 / ?theme=dark でダークモード / ?cols=2 でカラム数指定
                   </p>
                 )}
               </div>
@@ -804,17 +891,135 @@ export default function Dashboard() {
                 style={{
                   padding: "8px 16px",
                   borderRadius: 6,
-                  background: plan === "pro" ? "#fff" : "#f1f5f9",
-                  color: plan === "pro" ? "#1e293b" : "#94a3b8",
+                  background: (plan === "pro" || plan === "agency") ? "#fff" : "#f1f5f9",
+                  color: (plan === "pro" || plan === "agency") ? "#1e293b" : "#94a3b8",
                   border: "1px solid #e2e8f0",
                   fontSize: 13,
                   fontWeight: 600,
-                  cursor: plan === "pro" ? "pointer" : "not-allowed",
+                  cursor: (plan === "pro" || plan === "agency") ? "pointer" : "not-allowed",
                 }}
               >
-                CSVエクスポート {plan !== "pro" && "(Pro)"}
+                CSVエクスポート {plan !== "pro" && plan !== "agency" && "(Pro)"}
+              </button>
+              <button
+                onClick={fetchSummary}
+                disabled={summaryLoading}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  background: (plan === "pro" || plan === "agency") ? "linear-gradient(135deg, #7c3aed, #2563eb)" : "#f1f5f9",
+                  color: (plan === "pro" || plan === "agency") ? "#fff" : "#94a3b8",
+                  border: "none",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: (plan === "pro" || plan === "agency") ? "pointer" : "not-allowed",
+                }}
+              >
+                {summaryLoading ? "分析中..." : "AI口コミ要約"} {plan !== "pro" && plan !== "agency" && "(Pro)"}
               </button>
             </div>
+
+            {/* AI Summary Panel */}
+            {showSummary && aiSummary && (
+              <div style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #e2e8f0", marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                    AI口コミ分析レポート
+                  </h3>
+                  <button onClick={() => setShowSummary(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 18 }}>×</button>
+                </div>
+
+                {aiSummary.totalCount === 0 ? (
+                  <p style={{ color: "#64748b", fontSize: 14 }}>公開済みの口コミがありません。口コミを承認・公開してから要約を生成してください。</p>
+                ) : (
+                  <>
+                    {/* 概要バー */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 16 }}>
+                      <div style={{ background: "#f0f9ff", borderRadius: 8, padding: "12px 16px", textAlign: "center" }}>
+                        <div style={{ fontSize: 11, color: "#0369a1", marginBottom: 4 }}>総合評価</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: "#0c4a6e" }}>{aiSummary.averageRating} ★</div>
+                      </div>
+                      <div style={{ background: "#f0fdf4", borderRadius: 8, padding: "12px 16px", textAlign: "center" }}>
+                        <div style={{ fontSize: 11, color: "#16a34a", marginBottom: 4 }}>全体の印象</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#166534" }}>{aiSummary.overallSentiment}</div>
+                      </div>
+                      <div style={{ background: "#faf5ff", borderRadius: 8, padding: "12px 16px", textAlign: "center" }}>
+                        <div style={{ fontSize: 11, color: "#7c3aed", marginBottom: 4 }}>分析件数</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: "#5b21b6" }}>{aiSummary.totalCount}件</div>
+                      </div>
+                    </div>
+
+                    {/* 評価分布 */}
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", marginBottom: 8 }}>評価分布</div>
+                      {[5, 4, 3, 2, 1].map((star) => (
+                        <div key={star} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, color: "#f59e0b", width: 24 }}>{star}★</span>
+                          <div style={{ flex: 1, height: 8, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
+                            <div style={{
+                              height: "100%",
+                              background: star >= 4 ? "#16a34a" : star === 3 ? "#f59e0b" : "#dc2626",
+                              width: `${aiSummary.totalCount > 0 ? ((aiSummary.ratingDistribution[star] || 0) / aiSummary.totalCount) * 100 : 0}%`,
+                              borderRadius: 4,
+                            }} />
+                          </div>
+                          <span style={{ fontSize: 12, color: "#64748b", width: 24, textAlign: "right" }}>{aiSummary.ratingDistribution[star] || 0}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* キーワード */}
+                    {aiSummary.keywords?.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", marginBottom: 8 }}>よく使われるキーワード</div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {aiSummary.keywords.slice(0, 8).map((kw: { word: string; count: number }, i: number) => (
+                            <span key={i} style={{
+                              padding: "4px 10px",
+                              borderRadius: 99,
+                              background: "#f1f5f9",
+                              fontSize: 12,
+                              color: "#475569",
+                              fontWeight: 500,
+                            }}>
+                              {kw.word} ({kw.count})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ハイライト */}
+                    {aiSummary.highlights?.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#16a34a", marginBottom: 8 }}>高評価のハイライト</div>
+                        {aiSummary.highlights.map((h: { content: string; rating: number; name: string }, i: number) => (
+                          <div key={i} style={{ padding: "8px 12px", background: "#f0fdf4", borderRadius: 8, marginBottom: 6, fontSize: 13, color: "#166534" }}>
+                            &ldquo;{h.content}&rdquo; — {h.name} ({h.rating}★)
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 改善点 */}
+                    {aiSummary.improvements?.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginBottom: 8 }}>改善のヒント</div>
+                        {aiSummary.improvements.map((h: { content: string; rating: number; name: string }, i: number) => (
+                          <div key={i} style={{ padding: "8px 12px", background: "#fef2f2", borderRadius: 8, marginBottom: 6, fontSize: 13, color: "#991b1b" }}>
+                            &ldquo;{h.content}&rdquo; — {h.name} ({h.rating}★)
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 12, textAlign: "right" }}>
+                  生成日時: {new Date(aiSummary.generatedAt).toLocaleString("ja-JP")}
+                </div>
+              </div>
+            )}
 
             {/* Tabs */}
             <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "#fff", borderRadius: 8, padding: 4, border: "1px solid #e2e8f0", width: "fit-content" }}>

@@ -1,10 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { getTemplateById } from "@/lib/templates";
 
-export default function TestimonialForm() {
+function TestimonialFormInner() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const templateId = searchParams.get("t") || "general";
+  const template = getTemplateById(templateId);
 
   const [projectName, setProjectName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -120,6 +124,28 @@ export default function TestimonialForm() {
           </p>
         </div>
 
+        {/* Guide Questions (if template has questions) */}
+        {template.questions.length > 0 && (
+          <div style={{
+            background: `${template.color}08`,
+            border: `1px solid ${template.color}30`,
+            borderRadius: 12,
+            padding: "16px 20px",
+            marginBottom: 24,
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: template.color, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+              <span>{template.icon}</span> こんな点を教えてください
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+              {template.questions.map((q, i) => (
+                <li key={i} style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 16, padding: 32, border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           {/* Star Rating */}
@@ -159,7 +185,7 @@ export default function TestimonialForm() {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="サービスを使った感想をお聞かせください..."
+              placeholder={template.placeholderComment}
               required
               rows={4}
               style={{
@@ -209,7 +235,7 @@ export default function TestimonialForm() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="株式会社〇〇 代表"
+              placeholder={template.placeholderTitle}
               style={{
                 width: "100%",
                 padding: "12px 16px",
@@ -300,5 +326,17 @@ export default function TestimonialForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TestimonialForm() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", fontFamily: "Inter, Noto Sans JP, sans-serif" }}>
+        <div style={{ fontSize: 16, color: "#64748b" }}>読み込み中...</div>
+      </div>
+    }>
+      <TestimonialFormInner />
+    </Suspense>
   );
 }
