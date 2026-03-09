@@ -47,6 +47,7 @@ export default function Home() {
           <a href="#features" style={{padding:"8px 16px",borderRadius:8,fontSize:14,textDecoration:"none",color:"#64748b",fontWeight:500}}>{lang==="ja"?"機能":"Features"}</a>
           <a href="#pricing" style={{padding:"8px 16px",borderRadius:8,fontSize:14,textDecoration:"none",color:"#64748b",fontWeight:500}}>{lang==="ja"?"料金":"Pricing"}</a>
           <a href="#waitlist" style={{padding:"8px 16px",borderRadius:8,fontSize:14,textDecoration:"none",color:"#64748b",fontWeight:500}}>{lang==="ja"?"事前登録":"Waitlist"}</a>
+          <a href="/dashboard" style={{padding:"8px 16px",borderRadius:8,fontSize:14,textDecoration:"none",color:"#2563eb",fontWeight:600}}>{lang==="ja"?"管理画面":"Dashboard"}</a>
           <button onClick={()=>setLang(lang==="ja"?"en":"ja")} style={{padding:"6px 12px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"#64748b"}}>{lang==="ja"?"EN":"JP"}</button>
         </div>
       </nav>

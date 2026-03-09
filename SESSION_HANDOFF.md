@@ -1,5 +1,5 @@
 # VoiceWall - Session Handoff Document
-*Last updated: 2026-03-09*
+*Last updated: 2026-03-09 (Session 3)*
 
 ## Project Overview
 VoiceWall is a testimonial collection/management Micro-SaaS tool. The user (金杉昌俊) is a programming beginner who wants maximum automation from Claude.
@@ -18,9 +18,18 @@ VoiceWall is a testimonial collection/management Micro-SaaS tool. The user (金�
 - **Project ID:** viirgzvyqmiiommyrhsm
 - **URL:** https://viirgzvyqmiiommyrhsm.supabase.co
 - **Region:** Asia-Pacific (ap-southeast-1)
-- **Database table:** `waitlist` (id BIGINT PK, email TEXT UNIQUE, created_at TIMESTAMPTZ)
-- **RLS:** Enabled with "Allow public insert" policy for `{public}` role (INSERT only, WITH CHECK true)
 - **Anon key:** Stored in `.env.local` (not committed to git)
+
+### Database Tables
+1. **`waitlist`** (id BIGINT PK, email TEXT UNIQUE, created_at TIMESTAMPTZ)
+   - RLS: "Allow public insert" policy (INSERT only)
+2. **`projects`** (NEW - Session 3)
+   - id UUID PK, name TEXT, slug TEXT UNIQUE, owner_email TEXT, settings JSONB, created_at TIMESTAMPTZ
+   - RLS: Public read + insert
+   - Demo project created: slug='demo', owner='mildsolt.official@gmail.com'
+3. **`testimonials`** (NEW - Session 3)
+   - id UUID PK, project_id UUID FK→projects, customer_name TEXT, customer_email TEXT, customer_title TEXT, rating INT(1-5), content TEXT, is_published BOOL, consent BOOL, metadata JSONB, created_at TIMESTAMPTZ
+   - RLS: Public read + insert + update
 
 ## Project Structure
 ```
@@ -28,16 +37,27 @@ C:\Users\duper\voicewall\
 ├── .env.local                    # Supabase URL + Anon Key (gitignored)
 ├── .gitignore
 ├── deploy.ps1                    # One-command build + git + Vercel deploy
+├── supabase_migration.sql        # NEW: Migration for projects + testimonials tables
 ├── next.config.ts
 ├── package.json                  # includes @supabase/supabase-js ^2.49.0
 ├── tsconfig.json
 └── src/
     ├── app/
     │   ├── layout.tsx
-    │   ├── page.tsx              # Landing page with waitlist form (async fetch)
+    │   ├── page.tsx              # Landing page (+ Dashboard link in nav)
+    │   ├── dashboard/
+    │   │   └── page.tsx          # NEW: Admin dashboard for managing testimonials
+    │   ├── t/
+    │   │   └── [slug]/
+    │   │       └── page.tsx      # NEW: Public testimonial submission form
+    │   ├── embed/
+    │   │   └── [slug]/
+    │   │       └── page.tsx      # NEW: Embeddable "Wall of Love" widget
     │   └── api/
-    │       └── waitlist/
-    │           └── route.ts      # POST endpoint for waitlist signup
+    │       ├── waitlist/
+    │       │   └── route.ts      # POST endpoint for waitlist signup
+    │       └── testimonials/
+    │           └── route.ts      # NEW: GET/POST/PATCH for testimonials
     └── lib/
         └── supabase.ts           # Supabase client initialization
 ```
@@ -47,35 +67,84 @@ Last committed: `734eeb6 Update: 2026-03-08 21:33`
 
 **Uncommitted changes (need deploy):**
 - `package.json` — added `@supabase/supabase-js` dependency
-- `src/app/page.tsx` — waitlist form now calls `/api/waitlist` API (async)
-- `src/app/api/waitlist/route.ts` — NEW: API route for Supabase insert
-- `src/lib/supabase.ts` — NEW: Supabase client
-- `.env.local` — NEW: environment variables (gitignored)
+- `src/app/page.tsx` — waitlist form + Dashboard nav link
+- `src/app/api/waitlist/route.ts` — API route for Supabase insert
+- `src/lib/supabase.ts` — Supabase client
+- `.env.local` — environment variables (gitignored)
+- `supabase_migration.sql` — NEW: Migration script (already executed on Supabase)
+- `src/app/api/testimonials/route.ts` — NEW: Testimonial CRUD API (GET/POST/PATCH)
+- `src/app/t/[slug]/page.tsx` — NEW: Public testimonial submission form
+- `src/app/embed/[slug]/page.tsx` — NEW: Embeddable widget page
+- `src/app/dashboard/page.tsx` — NEW: Admin dashboard
 
 ## What Has Been Done
 1. Created Next.js project with full Japanese/English landing page
 2. Deployed to Vercel via CLI (live at voicewall.vercel.app)
 3. Set up GitHub repo (MKanasugi000/voicewall)
-4. Created `deploy.ps1` automation script (npm install → build → git commit → push → vercel deploy)
+4. Created `deploy.ps1` automation script
 5. Created Supabase project "voicewall" via browser automation
 6. Created `waitlist` table in Supabase with RLS + anon insert policy
 7. Wrote Supabase integration code (client, API route, updated page.tsx)
 8. Retrieved anon key and set it in `.env.local`
-9. Set Vercel environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
+9. Set Vercel environment variables
 10. Deployed to Vercel with env vars (successful)
-11. **Fixed RLS bug:** Removed `.select()` from `route.ts` insert call — Supabase client executes SELECT after INSERT when `.select()` is used, but there was no SELECT RLS policy, causing "new row violates row-level security policy" error
+11. **Fixed RLS bug:** Removed `.select()` from waitlist insert
+12. **Waitlist confirmed working** — test email saved to Supabase
+13. **Created STRATEGY_REPORT.md** — competitive analysis, pricing, marketing plan
+14. **Created AI team member: 山本ツイ (X運用担当)** on Gemini Gem + ChatGPT GPT
+15. **Generated first week's tweet drafts** — saved to `TWEET_DRAFTS_W11.md`
+16. **X account profile setup** — Bio set: "Mild Solt | お客様の声を集めて活かすSaaS「VoiceWall」開発中 | Next.js + Supabase | 個人開発の試行錯誤をBuild in Publicで発信 | #個人開発 #MicroSaaS", Location: "Japan"
+17. **Logo generated by 伊藤デザ (ChatGPT GPT)** — Blue speech bubble with bar chart motif. Image available in ChatGPT conversation but not yet downloaded/uploaded to X profile.
+18. **中村ストラ (Gemini) provided testimonial form design** — Field recommendations, pricing tier differentiation, MVP feature set, Supabase schema
+19. **Implemented MVP testimonial collection form** (`/t/[slug]`) — Star rating, name, email, title, comment, consent checkbox
+20. **Implemented embeddable widget** (`/embed/[slug]`) — "Wall of Love" grid layout showing published testimonials
+21. **Implemented admin dashboard** (`/dashboard`) — Stats, testimonial approval/rejection, form URL copy, embed code copy
+22. **Implemented testimonials API** (`/api/testimonials`) — GET (fetch), POST (submit), PATCH (approve/reject)
+23. **Executed SQL migration on Supabase** — Created `projects` + `testimonials` tables with RLS policies + demo project
+
+## AI Team Members
+| Name | Platform | Role |
+|------|----------|------|
+| 中村ストラ | Gemini Gem | 戦略顧問 |
+| 田中リサ | Gemini Gem | リサーチャー |
+| 佐藤アナリ | ChatGPT GPT | 仕入れアナリスト |
+| 伊藤デザ | ChatGPT GPT | デザイナー |
+| 山本ツイ | Gemini Gem + ChatGPT GPT | X(Twitter)運用担当 |
 
 ## What Needs To Be Done Next (in order)
-1. **User runs on PC:** `cd C:\Users\duper\voicewall && powershell -ExecutionPolicy Bypass -File deploy.ps1`
-2. **Test:** Submit an email on https://voicewall.vercel.app and verify it appears in Supabase dashboard
+1. ~~**User creates email:** mildsolt.official@gmail.com~~ ✅ Done
+2. ~~**User creates X account:** https://x.com/Mildsolt2914491~~ ✅ Done
+3. ~~**X profile bio/location set**~~ ✅ Done
+4. ~~**Testimonial collection form implementation (MVP #1)**~~ ✅ Done
+5. ~~**Embeddable widget (MVP #2)**~~ ✅ Done
+6. ~~**Supabase migration for projects + testimonials**~~ ✅ Done
+7. **User runs deploy.ps1** to push all new code changes to Vercel
+8. **Download logo from ChatGPT (伊藤デザ)** and set as X profile picture
+9. **Request header image from 伊藤デザ** (1500x500 X header banner)
+10. **Post first tweet** from TWEET_DRAFTS_W11.md (account opening announcement)
+11. **Dashboard with Supabase Auth** (MVP feature #3 — currently no auth)
+12. **Connect GitHub to Vercel** for auto-deploy
+
+## MVP Feature URLs (after deploy)
+- **Landing page:** https://voicewall.vercel.app
+- **Testimonial form:** https://voicewall.vercel.app/t/demo
+- **Embed widget:** https://voicewall.vercel.app/embed/demo
+- **Dashboard:** https://voicewall.vercel.app/dashboard
+
+## Embed Code (for users)
+```html
+<iframe src="https://voicewall.vercel.app/embed/demo" width="100%" height="600" frameborder="0" style="border:none;border-radius:12px;"></iframe>
+```
 
 ## Future Roadmap
-- Connect GitHub to Vercel for auto-deploy (currently using CLI deploy)
-- User dashboard for managing testimonials
-- Testimonial collection form (public-facing)
-- Embeddable widget for displaying testimonials on other sites
+- Supabase Auth for dashboard access control
+- Connect GitHub to Vercel for auto-deploy
 - Stripe integration for Pro/Business plans
-- Email notification system
+- Email notification system (new testimonial received)
+- Video testimonial support (Pro plan)
+- Custom CSS for widgets (Pro plan)
+- API access (Business plan)
+- Multi-project support
 
 ## Important Notes
 - User's OS: Windows (PowerShell)
@@ -83,3 +152,6 @@ Last committed: `734eeb6 Update: 2026-03-08 21:33`
 - PowerShell scripts must use ASCII-only (Japanese characters cause encoding errors)
 - Cowork VM cannot run `npm install` / `npm run build` on mounted Windows directories (EPERM errors) — user must run these on their PC
 - `.env.local` is in `.gitignore` so it won't be pushed to GitHub
+- SQL migration has been executed directly on Supabase — no need to run again
+- ChatGPT (伊藤デザ) generated a VoiceWall logo that needs to be downloaded from the conversation
+- X account @Mildsolt2914491 has bio set but no profile picture or header yet
