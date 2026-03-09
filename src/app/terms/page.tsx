@@ -103,6 +103,15 @@ export default function Terms() {
           本サービスに関して紛争が生じた場合には、東京地方裁判所を第一審の専属的合意管轄とします。
         </p>
 
+        <h2 style={s.h2}>第12条（お問い合わせ）</h2>
+        <p style={s.p}>
+          本規約に関するお問い合わせは、以下までご連絡ください。
+        </p>
+        <p style={s.p}>
+          運営: Mildsolt<br />
+          メール: mildsolt.official@gmail.com
+        </p>
+
         <div style={{ marginTop: 60, padding: "24px 0", borderTop: "1px solid #e2e8f0" }}>
           <a href="/" style={{ color: "#2563eb", textDecoration: "none", fontSize: 14 }}>← トップページに戻る</a>
         </div>

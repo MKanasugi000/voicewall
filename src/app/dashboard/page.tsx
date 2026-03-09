@@ -235,6 +235,26 @@ export default function Dashboard() {
     );
   };
 
+  // Delete testimonial
+  const deleteTestimonial = async (id: string) => {
+    if (!user || !confirm("この口コミを削除しますか？この操作は取り消せません。")) return;
+    try {
+      const res = await fetch("/api/testimonials", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, userId: user.id }),
+      });
+      if (res.ok) {
+        setTestimonials((prev) => prev.filter((t) => t.id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.error || "削除に失敗しました");
+      }
+    } catch {
+      alert("削除に失敗しました");
+    }
+  };
+
   // Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -874,6 +894,23 @@ export default function Dashboard() {
                           }}
                         >
                           {t.is_published ? "非公開にする" : "承認・公開"}
+                        </button>
+                        <button
+                          onClick={() => deleteTestimonial(t.id)}
+                          style={{
+                            padding: "8px 12px",
+                            borderRadius: 6,
+                            border: "1px solid #fecaca",
+                            background: "#fff",
+                            color: "#dc2626",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            whiteSpace: "nowrap",
+                          }}
+                          title="削除"
+                        >
+                          削除
                         </button>
                       </div>
                     </div>

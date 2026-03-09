@@ -259,6 +259,7 @@ export default function Home() {
             <a href="/dashboard" style={{ color: "#94a3b8", textDecoration: "none" }}>管理画面</a>
             <a href="/terms" style={{ color: "#94a3b8", textDecoration: "none" }}>利用規約</a>
             <a href="/privacy" style={{ color: "#94a3b8", textDecoration: "none" }}>プライバシーポリシー</a>
+            <a href="mailto:mildsolt.official@gmail.com" style={{ color: "#94a3b8", textDecoration: "none" }}>お問い合わせ</a>
           </div>
           <p>© 2026 VoiceWall. All rights reserved.</p>
         </div>

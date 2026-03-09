@@ -91,7 +91,8 @@ export default function Privacy() {
           本ポリシーに関するお問い合わせは、以下までご連絡ください。
         </p>
         <p style={s.p}>
-          メール: m.kanasugi0000ffxiv@gmail.com
+          運営: Mildsolt<br />
+          メール: mildsolt.official@gmail.com
         </p>
 
         <h2 style={s.h2}>10. ポリシーの変更</h2>

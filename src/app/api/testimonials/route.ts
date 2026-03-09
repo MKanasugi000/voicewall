@@ -190,3 +190,57 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+// DELETE: Delete a testimonial
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, userId } = body;
+
+    if (!id || !userId) {
+      return NextResponse.json(
+        { error: "id and userId are required" },
+        { status: 400 }
+      );
+    }
+
+    // 口コミのproject_idを取得
+    const { data: testimonial } = await supabase
+      .from("testimonials")
+      .select("project_id")
+      .eq("id", id)
+      .single();
+
+    if (!testimonial) {
+      return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
+    }
+
+    // プロジェクトの所有者を確認
+    const { data: project } = await supabase
+      .from("projects")
+      .select("user_id")
+      .eq("id", testimonial.project_id)
+      .single();
+
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+    }
+
+    // 削除
+    const { error } = await supabase
+      .from("testimonials")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: "Deleted successfully" });
+  } catch {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
