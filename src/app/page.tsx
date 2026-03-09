@@ -41,19 +41,39 @@ export default function Home() {
     { n: "3", t: "サイトに表示", d: "ウィジェットコードを貼り付けるだけ。承認制で安心。" },
   ];
 
+  const aboutCards = [
+    { icon: "📨", t: "集める", sub: "フォームでかんたん収集", d: "お客様の感想や評価を、専用フォームでスムーズに集められます。リンクを送るだけで完了。" },
+    { icon: "📋", t: "管理する", sub: "口コミを見やすく整理", d: "集まった声を一覧で管理。掲載したい口コミだけを選んで承認できます。" },
+    { icon: "🌐", t: "見せる", sub: "サイトやLPに掲載", d: "信頼感を高めるお客様の声を、コード1行でサービスページに表示できます。" },
+  ];
+
+  const personas = [
+    { icon: "🎯", t: "サイトの成約率を上げたい方", d: "商品やサービスの魅力はあるのに、第三者の声が少なく、信頼感を十分に伝えられていない方に。" },
+    { icon: "⏱️", t: "口コミ収集に手間をかけたくない方", d: "紹介や感謝の言葉はもらえるのに、口コミとして整理・保存できず活用につながっていない方に。" },
+    { icon: "📂", t: "口コミの管理がバラバラな方", d: "DM、メール、スプレッドシートなどに声が散らばり、必要なときにすぐ取り出せない方に。" },
+    { icon: "💻", t: "小規模チーム・個人で運営している方", d: "大きなシステムは不要だけれど、最低限の口コミ運用をシンプルに整えたい方に。" },
+  ];
+
+  const painPoints = [
+    { icon: "🔒", t: "信頼されにくい", d: "初めて訪れたユーザーは、運営者の説明だけでは安心して申し込めません。" },
+    { icon: "⚖️", t: "比較で負けやすい", d: "競合に実績や口コミが並んでいると、サービス内容が近くても選ばれにくくなります。" },
+    { icon: "💨", t: "良い評価が資産にならない", d: "満足してくれたお客様の声があっても、集めて残さなければ価値は流れてしまいます。" },
+    { icon: "📉", t: "LPの説得力が弱くなる", d: "機能や特徴を丁寧に説明しても、利用者の声がないと最後のひと押しが足りません。" },
+  ];
+
   const plans = [
     {
       name: "Free",
       price: "¥0",
       per: "",
-      items: ["プロジェクト1つ", "口コミ収集 5件/月", "基本ウィジェット", "VoiceWallロゴ表示"],
+      items: ["プロジェクト1つ", "口コミ収集 10件/月", "基本ウィジェット", "VoiceWallロゴ表示"],
       btn: "無料で始める",
       href: "/login",
       featured: false,
     },
     {
       name: "Pro",
-      price: "¥980",
+      price: "¥2,980",
       per: "/ 月",
       items: ["プロジェクト無制限", "口コミ収集 無制限", "ロゴ非表示", "ウィジェットカスタマイズ", "CSVエクスポート", "優先サポート"],
       btn: "Proを始める",
@@ -94,24 +114,104 @@ export default function Home() {
         <h1 style={{ fontSize: "clamp(32px,5vw,52px)", fontWeight: 800, lineHeight: 1.2, marginBottom: 16, color: "#1e293b" }}>
           口コミを<span style={{ color: "#2563eb" }}>集めて</span>、<span style={{ color: "#2563eb" }}>見せる</span>。
         </h1>
-        <p style={{ fontSize: 18, color: "#64748b", maxWidth: 600, margin: "0 auto 32px" }}>
-          VoiceWallは、テスティモニアルの収集・管理・表示をひとつのツールで完結できるサービスです。
+        <p style={{ fontSize: 18, color: "#64748b", maxWidth: 600, margin: "0 auto 12px" }}>
+          VoiceWallは、お客様の声を収集・管理・表示できるオールインワンツールです。
+        </p>
+        <p style={{ fontSize: 15, color: "#94a3b8", maxWidth: 500, margin: "0 auto 32px" }}>
+          コード1行でサイトに埋め込み。信頼を可視化して、成約率を高めましょう。
         </p>
         <a href="/login" style={{ display: "inline-block", padding: "14px 32px", borderRadius: 8, background: "#2563eb", color: "#fff", fontSize: 16, fontWeight: 600, textDecoration: "none" }}>
           無料で始める
         </a>
-        <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 8 }}>クレジットカード不要</p>
+        <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 8 }}>クレジットカード不要 · 30秒で設置完了</p>
+      </section>
+
+      {/* VoiceWallとは？ */}
+      <section style={{ background: "#fff", padding: "60px 20px", borderTop: "1px solid #e2e8f0", borderBottom: "1px solid #e2e8f0" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 12, color: "#1e293b" }}>VoiceWallとは？</h2>
+          <p style={{ fontSize: 16, color: "#64748b", maxWidth: 600, margin: "0 auto 40px", lineHeight: 1.7 }}>
+            お客様の声を、集めて、整えて、伝わる形で届けるサービスです。<br />
+            埋もれていた「良い声」を、信頼につながる資産に変えます。
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
+            {aboutCards.map((c, i) => (
+              <div key={i} style={{ background: "#f8fafc", borderRadius: 12, padding: 28, border: "1px solid #e2e8f0", textAlign: "center" }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>{c.icon}</div>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: "#2563eb", marginBottom: 4 }}>{c.t}</h3>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", marginBottom: 8 }}>{c.sub}</p>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>{c.d}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 15, color: "#475569", marginTop: 32, fontWeight: 500 }}>
+            「良いサービスなのに、伝わらない」を防ぐための口コミ活用ツールです。
+          </p>
+        </div>
+      </section>
+
+      {/* こんな方におすすめ */}
+      <section style={{ maxWidth: 900, margin: "0 auto", padding: "60px 20px" }}>
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 12, color: "#1e293b" }}>こんな方におすすめ</h2>
+          <p style={{ fontSize: 16, color: "#64748b" }}>
+            口コミを活かしたいけれど、うまく仕組み化できていない方へ。
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 20 }}>
+          {personas.map((p, i) => (
+            <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #e2e8f0", display: "flex", gap: 16, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 28, flexShrink: 0, width: 44, height: 44, borderRadius: 10, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center" }}>{p.icon}</div>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", marginBottom: 6 }}>{p.t}</h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>{p.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{ textAlign: "center", fontSize: 15, color: "#475569", marginTop: 32, fontWeight: 500, lineHeight: 1.7 }}>
+          VoiceWallは、口コミの重要性はわかっているのに<br />
+          収集・管理・掲載が仕組み化できていない方に最適です。
+        </p>
+      </section>
+
+      {/* 口コミがないとこんな問題が… */}
+      <section style={{ background: "#fef9f0", padding: "60px 20px", borderTop: "1px solid #fde68a", borderBottom: "1px solid #fde68a" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 12, color: "#1e293b" }}>口コミがないと、こんな問題が起こります</h2>
+            <p style={{ fontSize: 16, color: "#64748b" }}>
+              良いサービスでも、信頼の材料がなければ選ばれにくくなります。
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 20 }}>
+            {painPoints.map((p, i) => (
+              <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #fde68a" }}>
+                <div style={{ fontSize: 28, marginBottom: 12 }}>{p.icon}</div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>{p.t}</h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>{p.d}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ textAlign: "center", fontSize: 15, color: "#92400e", marginTop: 32, fontWeight: 500, lineHeight: 1.7 }}>
+            口コミは、ただの感想ではありません。<br />
+            見込み顧客の不安を減らし、行動を後押しする「信頼の証拠」です。
+          </p>
+        </div>
       </section>
 
       {/* Features */}
-      <section id="features" style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px 80px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
-        {features.map((f, i) => (
-          <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 32, border: "1px solid #e2e8f0" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 16 }}>{f.icon}</div>
-            <h3 style={{ fontSize: 18, marginBottom: 8, color: "#1e293b" }}>{f.t}</h3>
-            <p style={{ color: "#64748b", fontSize: 14, lineHeight: 1.6 }}>{f.d}</p>
-          </div>
-        ))}
+      <section id="features" style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 20px 80px" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 800, textAlign: "center", marginBottom: 40, color: "#1e293b" }}>主な機能</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 24 }}>
+          {features.map((f, i) => (
+            <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 32, border: "1px solid #e2e8f0" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 16 }}>{f.icon}</div>
+              <h3 style={{ fontSize: 18, marginBottom: 8, color: "#1e293b" }}>{f.t}</h3>
+              <p style={{ color: "#64748b", fontSize: 14, lineHeight: 1.6 }}>{f.d}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* How it works */}
