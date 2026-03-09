@@ -35,6 +35,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Freeプランの口コミ数制限チェック（5件/月）
+    const { data: projectFull } = await supabase
+      .from("projects")
+      .select("user_id")
+      .eq("id", project.id)
+      .single();
+
+    if (projectFull?.user_id) {
+      // ユーザーのプランを確認
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("plan, status")
+        .eq("user_id", projectFull.user_id)
+        .eq("status", "active")
+        .single();
+
+      const userPlan = sub?.plan || "free";
+
+      if (userPlan === "free") {
+        // 今月の口コミ数をカウント
+        const now = new Date();
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+        const { count: monthlyCount } = await supabase
+          .from("testimonials")
+          .select("*", { count: "exact", head: true })
+          .eq("project_id", project.id)
+          .gte("created_at", firstOfMonth);
+
+        if ((monthlyCount || 0) >= 5) {
+          return NextResponse.json(
+            { error: "このプロジェクトの今月の口コミ上限（5件）に達しました。" },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     // Insert testimonial
     const { error } = await supabase
       .from("testimonials")
