@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Gradient for speech bubble outline -->
+    <linearGradient id="bubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60C4FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2E90FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A3FB5;stop-opacity:1" />
+    </linearGradient>
+    <!-- Gradient for bars -->
+    <linearGradient id="barGrad1" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#93D5FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#60C4FF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="barGrad2" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#60C4FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3BA0F5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="barGrad3" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#3BA0F5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563EB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="barGrad4" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A3FB5;stop-opacity:1" />
+    </linearGradient>
+    <!-- Sparkle gradient -->
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60C4FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563EB;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- White background circle for profile pic -->
+  <circle cx="256" cy="256" r="256" fill="white"/>
+
+  <!-- Speech bubble shape -->
+  <g transform="translate(256, 230)">
+    <!-- Main bubble ellipse - outline only with gradient -->
+    <ellipse cx="0" cy="0" rx="155" ry="120" fill="none" stroke="url(#bubbleGrad)" stroke-width="18"/>
+
+    <!-- Speech bubble tail -->
+    <path d="M-40,100 Q-60,150 -90,170 Q-40,145 -10,120" fill="url(#bubbleGrad)" stroke="none"/>
+
+    <!-- Bar chart inside bubble -->
+    <!-- Bar 1 (shortest, leftmost) -->
+    <rect x="-75" y="10" width="28" height="55" rx="6" fill="url(#barGrad1)"/>
+    <!-- Small dot above bar 1 -->
+    <circle cx="-61" cy="0" r="5" fill="url(#barGrad1)"/>
+
+    <!-- Bar 2 -->
+    <rect x="-35" y="-15" width="28" height="80" rx="6" fill="url(#barGrad2)"/>
+
+    <!-- Bar 3 (tallest) -->
+    <rect x="5" y="-50" width="28" height="115" rx="6" fill="url(#barGrad3)"/>
+
+    <!-- Bar 4 -->
+    <rect x="45" y="-30" width="28" height="95" rx="6" fill="url(#barGrad4)"/>
+  </g>
+
+  <!-- Sparkle star (top right) -->
+  <g transform="translate(365, 115)">
+    <path d="M0,-25 Q3,-3 25,0 Q3,3 0,25 Q-3,3 -25,0 Q-3,-3 0,-25Z" fill="url(#sparkleGrad)"/>
+  </g>
+
+  <!-- Small sparkle -->
+  <g transform="translate(395, 165)">
+    <path d="M0,-12 Q2,-2 12,0 Q2,2 0,12 Q-2,2 -12,0 Q-2,-2 0,-12Z" fill="url(#sparkleGrad)"/>
+  </g>
+
+  <!-- Tiny sparkle -->
+  <g transform="translate(340, 155)">
+    <path d="M0,-7 Q1,-1 7,0 Q1,1 0,7 Q-1,1 -7,0 Q-1,-1 0,-7Z" fill="#60C4FF"/>
+  </g>
+</svg>
