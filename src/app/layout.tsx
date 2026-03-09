@@ -11,11 +11,20 @@ export const metadata: Metadata = {
     siteName: "VoiceWall",
     locale: "ja_JP",
     type: "website",
+    images: [
+      {
+        url: "https://voicewall.vercel.app/api/og",
+        width: 1200,
+        height: 630,
+        alt: "VoiceWall - 口コミを集めて、見せる。",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "VoiceWall - 口コミを集めて、見せる。",
     description: "テスティモニアルの収集・管理・表示をひとつのツールで完結。無料で始められます。",
+    images: ["https://voicewall.vercel.app/api/og"],
   },
   keywords: ["口コミ", "テスティモニアル", "レビュー", "SaaS", "ウィジェット", "フィードバック", "VoiceWall"],
   robots: "index, follow",

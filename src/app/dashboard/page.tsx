@@ -213,6 +213,26 @@ export default function Dashboard() {
 
   const FREE_LIMIT = { projects: 1, testimonials: 5 };
 
+  // Stripeカスタマーポータル
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, "_blank");
+      } else {
+        alert(data.error || "エラーが発生しました");
+      }
+    } catch {
+      alert("エラーが発生しました");
+    }
+  };
+
   // CSVエクスポート
   const handleExportCSV = async () => {
     if (!selectedProject || !user) return;
@@ -264,7 +284,7 @@ export default function Dashboard() {
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {plan === "free" && (
+          {plan === "free" ? (
             <a
               href="/pricing"
               style={{
@@ -279,6 +299,22 @@ export default function Dashboard() {
             >
               Proにアップグレード
             </a>
+          ) : (
+            <button
+              onClick={handleManageSubscription}
+              style={{
+                padding: "6px 14px",
+                borderRadius: 6,
+                background: "#f1f5f9",
+                color: "#64748b",
+                border: "1px solid #e2e8f0",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              プラン管理
+            </button>
           )}
           <span style={{ fontSize: 12, color: "#94a3b8" }}>{user?.email}</span>
           <button

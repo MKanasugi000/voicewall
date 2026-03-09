@@ -257,6 +257,8 @@ export default function Home() {
             <a href="/pricing" style={{ color: "#94a3b8", textDecoration: "none" }}>料金</a>
             <a href="/login" style={{ color: "#94a3b8", textDecoration: "none" }}>ログイン</a>
             <a href="/dashboard" style={{ color: "#94a3b8", textDecoration: "none" }}>管理画面</a>
+            <a href="/terms" style={{ color: "#94a3b8", textDecoration: "none" }}>利用規約</a>
+            <a href="/privacy" style={{ color: "#94a3b8", textDecoration: "none" }}>プライバシーポリシー</a>
           </div>
           <p>© 2026 VoiceWall. All rights reserved.</p>
         </div>
