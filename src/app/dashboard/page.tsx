@@ -26,11 +26,43 @@ interface Project {
 
 type View = "projects" | "testimonials";
 
+// チュートリアルステップ定義
+const TUTORIAL_STEPS = [
+  {
+    icon: "📝",
+    title: "Step 1: プロジェクトを作成",
+    description: "まずはプロジェクトを作成しましょう。プロジェクト名を入力して「作成」を押すだけです。プロジェクトごとに口コミの収集・管理ができます。",
+    tip: "例: 「My SaaS」「カフェレビュー」など、サービス名や用途に合わせた名前をつけましょう。",
+  },
+  {
+    icon: "🔗",
+    title: "Step 2: 収集フォームURLを共有",
+    description: "プロジェクトを開くと「収集フォームURL」が表示されます。このURLを顧客やユーザーに共有するだけで、口コミを収集できます。",
+    tip: "メール・SNS・Webサイトなど、どこからでもアクセスできるリンクです。",
+  },
+  {
+    icon: "✅",
+    title: "Step 3: 口コミを承認・公開",
+    description: "集まった口コミはダッシュボードに表示されます。内容を確認して「承認・公開」ボタンを押すと、ウィジェットに反映されます。",
+    tip: "不適切な口コミは非公開のままにできるので安心です。",
+  },
+  {
+    icon: "🎨",
+    title: "Step 4: ウィジェットをサイトに埋め込み",
+    description: "「埋め込みコード」をコピーして、あなたのWebサイトに貼り付けるだけ。美しいウィジェットで口コミを表示できます。",
+    tip: "Proプランならロゴ非表示・ダークモード・カラム数のカスタマイズも可能です。",
+  },
+];
+
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [plan, setPlan] = useState("free");
   const [view, setView] = useState<View>("projects");
+
+  // Tutorial state
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
 
   // Projects state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -95,6 +127,42 @@ export default function Dashboard() {
       }
     }
   }, []);
+
+  // Tutorial: 初回アクセス時にチュートリアルを表示
+  useEffect(() => {
+    if (!user) return;
+    const key = `voicewall_tutorial_done_${user.id}`;
+    if (typeof window !== "undefined" && !localStorage.getItem(key)) {
+      setShowTutorial(true);
+    }
+  }, [user]);
+
+  const closeTutorial = () => {
+    setShowTutorial(false);
+    setTutorialStep(0);
+    if (user) {
+      localStorage.setItem(`voicewall_tutorial_done_${user.id}`, "true");
+    }
+  };
+
+  const nextTutorialStep = () => {
+    if (tutorialStep < TUTORIAL_STEPS.length - 1) {
+      setTutorialStep(tutorialStep + 1);
+    } else {
+      closeTutorial();
+    }
+  };
+
+  const prevTutorialStep = () => {
+    if (tutorialStep > 0) {
+      setTutorialStep(tutorialStep - 1);
+    }
+  };
+
+  const reopenTutorial = () => {
+    setTutorialStep(0);
+    setShowTutorial(true);
+  };
 
   // Create project
   const createProject = async () => {
@@ -316,6 +384,21 @@ export default function Dashboard() {
               プラン管理
             </button>
           )}
+          <button
+            onClick={reopenTutorial}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 6,
+              background: "#f0fdf4",
+              color: "#16a34a",
+              border: "1px solid #bbf7d0",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            使い方
+          </button>
           <span style={{ fontSize: 12, color: "#94a3b8" }}>{user?.email}</span>
           <button
             onClick={handleLogout}
@@ -325,6 +408,143 @@ export default function Dashboard() {
           </button>
         </div>
       </nav>
+
+      {/* Tutorial Modal */}
+      {showTutorial && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: 20,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeTutorial(); }}
+        >
+          <div style={{
+            background: "#fff",
+            borderRadius: 20,
+            maxWidth: 520,
+            width: "100%",
+            overflow: "hidden",
+            boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
+          }}>
+            {/* Progress bar */}
+            <div style={{ height: 4, background: "#e2e8f0" }}>
+              <div style={{
+                height: 4,
+                background: "#2563eb",
+                width: `${((tutorialStep + 1) / TUTORIAL_STEPS.length) * 100}%`,
+                transition: "width 0.3s ease",
+                borderRadius: 2,
+              }} />
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "40px 36px 32px" }}>
+              <div style={{
+                width: 64,
+                height: 64,
+                borderRadius: 16,
+                background: "#dbeafe",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 32,
+                marginBottom: 20,
+              }}>
+                {TUTORIAL_STEPS[tutorialStep].icon}
+              </div>
+
+              <div style={{ fontSize: 12, color: "#2563eb", fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
+                {tutorialStep + 1} / {TUTORIAL_STEPS.length}
+              </div>
+
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1e293b", marginBottom: 12, lineHeight: 1.3 }}>
+                {TUTORIAL_STEPS[tutorialStep].title}
+              </h2>
+
+              <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.7, marginBottom: 16 }}>
+                {TUTORIAL_STEPS[tutorialStep].description}
+              </p>
+
+              <div style={{
+                background: "#f0f9ff",
+                border: "1px solid #bae6fd",
+                borderRadius: 10,
+                padding: "12px 16px",
+                fontSize: 13,
+                color: "#0369a1",
+                lineHeight: 1.6,
+              }}>
+                💡 {TUTORIAL_STEPS[tutorialStep].tip}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: "16px 36px 28px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}>
+              <button
+                onClick={closeTutorial}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#94a3b8",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  padding: "8px 0",
+                }}
+              >
+                スキップ
+              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                {tutorialStep > 0 && (
+                  <button
+                    onClick={prevTutorialStep}
+                    style={{
+                      padding: "10px 20px",
+                      borderRadius: 8,
+                      background: "#f1f5f9",
+                      color: "#64748b",
+                      border: "none",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    戻る
+                  </button>
+                )}
+                <button
+                  onClick={nextTutorialStep}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: 8,
+                    background: "#2563eb",
+                    color: "#fff",
+                    border: "none",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {tutorialStep === TUTORIAL_STEPS.length - 1 ? "始める" : "次へ"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px" }}>
         {/* Breadcrumb */}
